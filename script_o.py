@@ -1,32 +1,17 @@
+import streamlit as st
 from exchangelib import Credentials, Account, Configuration, DELEGATE, FileAttachment, EWSDateTime, EWSTimeZone
 import os
 from datetime import datetime, timedelta
-import keyring
-import getpass
+import zipfile
+import io
 
-def get_or_create_credentials():
-    service_name = 'OutlookEmailFetcher'
-    email_account = keyring.get_password(service_name, 'email')
-    password = keyring.get_password(service_name, 'password')
-    
-    if not email_account or not password:
-        email_account = input("Enter your Outlook email address: ")
-        password = getpass.getpass("Enter your Outlook password: ")
-        
-        keyring.set_password(service_name, 'email', email_account)
-        keyring.set_password(service_name, 'password', password)
-        
-        print("Credentials saved securely.")
-    
+def get_credentials():
+    email_account = st.text_input("Enter your Outlook email address:")
+    password = st.text_input("Enter your Outlook password:", type="password")
     return email_account, password
 
-def read_sender_emails(file_path):
-    if not os.path.exists(file_path):
-        print(f"Error: Sender email file not found: {file_path}")
-        return []
-
-    with open(file_path, 'r') as f:
-        return [line.strip() for line in f if line.strip()]
+def read_sender_emails(file_content):
+    return [line.strip() for line in file_content.split('\n') if line.strip()]
 
 def get_folder_name(file_name):
     if file_name.startswith("VitalsReports-Daily"):
@@ -38,84 +23,105 @@ def get_folder_name(file_name):
     else:
         return "MISC"
 
-def fetch_attachments_outlook():
-    email_address, password = get_or_create_credentials()
-    
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    sender_file = os.path.join(script_dir, "sender_emails.txt")
-    sender_emails = read_sender_emails(sender_file)
-    
-    if not sender_emails:
-        print("Error: No sender emails found. Please add sender email addresses to the file and run the script again.")
-        return []
+def fetch_attachments_outlook(email_address, password, sender_emails, start_date, end_date):
+    if not email_address or not password:
+        st.error("Please enter your credentials.")
+        return None
 
-    days_ago = int(input("Enter the number of days to look back: "))
+    if not sender_emails:
+        st.error("No sender emails provided. Please upload a file with sender email addresses.")
+        return None
 
     tz = EWSTimeZone.localzone()
-    date = EWSDateTime.now(tz=tz) - timedelta(days=days_ago)
+    start_date = EWSDateTime.from_datetime(datetime.combine(start_date, datetime.min.time()).replace(tzinfo=tz))
+    end_date = EWSDateTime.from_datetime(datetime.combine(end_date, datetime.max.time()).replace(tzinfo=tz))
 
-    base_folder = os.path.join(script_dir, "FetchedAttachments")
-    folders = ["VitalsReports", "DESRI DAILY", "IRS1", "MISC"]
-    for folder in folders:
-        folder_path = os.path.join(base_folder, folder)
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
+        try:
+            with st.spinner("Connecting to Outlook server..."):
+                credentials = Credentials(email_address, password)
+                config = Configuration(server='outlook.office365.com', credentials=credentials)
+                account = Account(primary_smtp_address=email_address, config=config, autodiscover=False, access_type=DELEGATE)
+            st.success("Connection successful")
 
-    fetched_files = []
+            progress_bar = st.progress(0)
+            status_text = st.empty()
 
-    try:
-        print("Connecting to Outlook server...")
-        credentials = Credentials(email_address, password)
-        config = Configuration(server='outlook.office365.com', credentials=credentials)
-        account = Account(primary_smtp_address=email_address, config=config, autodiscover=False, access_type=DELEGATE)
-        print("Connection successful")
+            total_attachments = 0
 
-        for sender in sender_emails:
-            print(f"Searching for messages from {sender} since {date}...")
-            messages = account.inbox.filter(datetime_received__gt=date, sender__contains=sender)
-            message_list = list(messages)
+            for i, sender in enumerate(sender_emails):
+                status_text.text(f"Searching for messages from {sender} between {start_date.date()} and {end_date.date()}...")
+                messages = account.inbox.filter(datetime_received__range=(start_date, end_date), sender__contains=sender)
+                message_list = list(messages)
+                
+                if not message_list:
+                    st.warning(f"No messages found from {sender}")
+                    continue
+
+                st.info(f"Found {len(message_list)} messages from {sender}")
+                sender_attachments = 0
+
+                for message in message_list:
+                    for attachment in message.attachments:
+                        if isinstance(attachment, FileAttachment) and (attachment.name.lower().endswith('.pdf') or attachment.name.lower().endswith('.docx')):
+                            folder_name = get_folder_name(attachment.name)
+                            file_path = os.path.join(folder_name, attachment.name)
+                            
+                            zip_file.writestr(file_path, attachment.content)
+                            sender_attachments += 1
+                            total_attachments += 1
+
+                if sender_attachments == 0:
+                    st.warning(f"0 attachments fetched from {sender}")
+                else:
+                    st.success(f"{sender_attachments} attachments fetched from {sender}")
+
+                progress_bar.progress((i + 1) / len(sender_emails))
+
+            status_text.text("Attachment fetching completed.")
+            return zip_buffer, total_attachments
+
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+            if hasattr(e, 'args') and len(e.args) > 1:
+                st.error(f"Additional error details: {e.args}")
+            return None
+
+st.title("Outlook Email Attachment Fetcher")
+
+email_address, password = get_credentials()
+
+uploaded_file = st.file_uploader("Upload a file with sender email addresses (one per line)", type="txt")
+if uploaded_file is not None:
+    sender_emails = read_sender_emails(uploaded_file.getvalue().decode())
+    st.write(f"Loaded {len(sender_emails)} sender email(s)")
+
+col1, col2 = st.columns(2)
+with col1:
+    start_date = st.date_input("Start Date", datetime.now() - timedelta(days=7))
+with col2:
+    end_date = st.date_input("End Date", datetime.now())
+
+if start_date > end_date:
+    st.error("Error: End date must fall after start date.")
+
+if st.button("Fetch Attachments"):
+    if uploaded_file is not None and start_date <= end_date:
+        result = fetch_attachments_outlook(email_address, password, sender_emails, start_date, end_date)
+        if result:
+            zip_buffer, total_attachments = result
+            st.success(f"Total attachments retrieved: {total_attachments}")
             
-            if not message_list:
-                print(f"No messages found from {sender}")
-                continue
-
-            print(f"Found {len(message_list)} messages from {sender}")
-            sender_attachments = 0
-
-            for message in message_list:
-                for attachment in message.attachments:
-                    if isinstance(attachment, FileAttachment) and (attachment.name.lower().endswith('.pdf') or attachment.name.lower().endswith('.docx')):
-                        folder_name = get_folder_name(attachment.name)
-                        save_folder = os.path.join(base_folder, folder_name)
-                        save_path = os.path.join(save_folder, attachment.name)
-                        
-                        # Ensure unique filename
-                        counter = 1
-                        while os.path.exists(save_path):
-                            name, ext = os.path.splitext(attachment.name)
-                            save_path = os.path.join(save_folder, f"{name}_{counter}{ext}")
-                            counter += 1
-                        
-                        with open(save_path, 'wb') as f:
-                            f.write(attachment.content)
-                        fetched_files.append(save_path)
-                        sender_attachments += 1
-
-            if sender_attachments == 0:
-                print(f"0 attachments fetched from {sender}")
-            else:
-                print(f"{sender_attachments} attachments fetched from {sender}")
-
-        return fetched_files
-
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        if hasattr(e, 'args') and len(e.args) > 1:
-            print(f"Additional error details: {e.args}")
-        return fetched_files
-
-# Run the function
-fetched_files = fetch_attachments_outlook()
-print(f"\nTotal attachments retrieved: {len(fetched_files)}")
-for file in fetched_files:
-    print(file)
+            # Offer the zip file for download
+            zip_buffer.seek(0)
+            st.download_button(
+                label="Download Attachments as ZIP",
+                data=zip_buffer,
+                file_name="fetched_attachments.zip",
+                mime="application/zip"
+            )
+    elif uploaded_file is None:
+        st.error("Please upload a file with sender email addresses.")
+    else:
+        st.error("Please ensure the end date is after the start date.")
