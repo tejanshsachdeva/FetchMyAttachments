@@ -88,14 +88,22 @@ def fetch_attachments_outlook(email_address, password, sender_emails, start_date
                 st.error(f"Additional error details: {e.args}")
             return None
 
-st.title("Outlook Email Attachment Fetcher")
+st.title("Fetch My Attachments")
 
 email_address, password = get_credentials()
 
 uploaded_file = st.file_uploader("Upload a file with sender email addresses (one per line)", type="txt")
+sender_emails = []
+
 if uploaded_file is not None:
     sender_emails = read_sender_emails(uploaded_file.getvalue().decode())
     st.write(f"Loaded {len(sender_emails)} sender email(s)")
+
+else:
+    sender_emails_input = st.text_area("Enter sender email addresses (one per line)")
+    if sender_emails_input:
+        sender_emails = read_sender_emails(sender_emails_input)
+        st.write(f"Loaded {len(sender_emails)} sender email(s)")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -107,7 +115,7 @@ if start_date > end_date:
     st.error("Error: End date must fall after start date.")
 
 if st.button("Fetch Attachments"):
-    if uploaded_file is not None and start_date <= end_date:
+    if (uploaded_file is not None or sender_emails) and start_date <= end_date:
         result = fetch_attachments_outlook(email_address, password, sender_emails, start_date, end_date)
         if result:
             zip_buffer, total_attachments = result
@@ -121,7 +129,5 @@ if st.button("Fetch Attachments"):
                 file_name="fetched_attachments.zip",
                 mime="application/zip"
             )
-    elif uploaded_file is None:
-        st.error("Please upload a file with sender email addresses.")
     else:
-        st.error("Please ensure the end date is after the start date.")
+        st.error("Please upload a file with sender email addresses or enter them manually, and ensure the end date is after the start date.")
