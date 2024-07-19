@@ -19,7 +19,6 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
 
    1. **Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
 
-
       ##### Format of .txt file:
 
       ![1721382613724](image/WalkThrough/1721382613724.png)
@@ -35,7 +34,7 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
    - Click the **'Fetch Attachments'** button to start the process. The app will now access your Outlook account, search for emails from the specified senders within the provided date range, and fetch the attachments. This process might take a few seconds or even minutes.
 
      ![1721382699354](image/WalkThrough/1721382699354.png)
-     After clicking on **"Fetch Attachments"**, you will see **"Connection Successfull"** which means that your **Outlook Account** is successfully connected.
+     After clicking on **"Fetch Attachments"**, you will see **"Connection Successful"** which means that your **Outlook Account** is successfully connected.
 
      ![1721382763129](image/WalkThrough/1721382763129.png)
 5. **Download the Zip File:**
@@ -62,6 +61,16 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
 - Ensure your email credentials are correct to avoid authentication errors.
 - If the text file is too large or incorrectly formatted, you may encounter errors. Ensure each email address is on a new line.
 - The date range should be valid and within the past to avoid errors in fetching attachments.
+
+### Security Measures
+
+1. **Session State for Temporary Storage**:
+
+   The email address is stored in the Streamlit session state, minimizing the need for re-entry and reducing the risk of exposure.
+2. **Email Format Validation**:
+
+   The code includes validation for the email format using a regular expression, ensuring that only properly formatted email addresses are processed**Sanitization of Folder and File Names**:
+3. Folder and file names are sanitized to prevent path traversal attacks, ensuring that only safe characters are used in paths.
 
 ### Troubleshooting and Support
 
