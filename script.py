@@ -4,10 +4,22 @@ import os
 from datetime import datetime, timedelta
 import zipfile
 import io
+import re
 
+# Function to get credentials securely using session state
 def get_credentials():
-    email_account = st.text_input("Enter your Outlook email address:")
+    if "email_account" not in st.session_state:
+        st.session_state.email_account = ""
+    if "password" not in st.session_state:
+        st.session_state.password = ""
+    
+    email_account = st.text_input("Enter your Outlook email address:", value=st.session_state.email_account)
     password = st.text_input("Enter your Outlook password:", type="password")
+    
+    if email_account and password:
+        st.session_state.email_account = email_account
+        st.session_state.password = password
+    
     return email_account, password
 
 def read_sender_emails(file_content):
@@ -30,6 +42,12 @@ def fetch_attachments_outlook(email_address, password, sender_emails, start_date
 
     if not sender_emails:
         st.error("No sender emails provided. Please upload a file with sender email addresses.")
+        return None
+
+    # Validate email format
+    email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
+    if not email_regex.match(email_address):
+        st.error("Invalid email format.")
         return None
 
     tz = EWSTimeZone.localzone()
@@ -66,7 +84,10 @@ def fetch_attachments_outlook(email_address, password, sender_emails, start_date
                     for attachment in message.attachments:
                         if isinstance(attachment, FileAttachment) and (attachment.name.lower().endswith('.pdf') or attachment.name.lower().endswith('.docx')):
                             folder_name = get_folder_name(attachment.name)
-                            file_path = os.path.join(folder_name, attachment.name)
+                            # Prevent path traversal attacks
+                            safe_folder_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', folder_name)
+                            safe_file_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', attachment.name)
+                            file_path = os.path.join(safe_folder_name, safe_file_name)
                             
                             zip_file.writestr(file_path, attachment.content)
                             sender_attachments += 1
@@ -84,8 +105,6 @@ def fetch_attachments_outlook(email_address, password, sender_emails, start_date
 
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
-            if hasattr(e, 'args') and len(e.args) > 1:
-                st.error(f"Additional error details: {e.args}")
             return None
 
 st.title("Fetch My Attachments")
@@ -116,7 +135,7 @@ if start_date > end_date:
 
 if st.button("Fetch Attachments"):
     if (uploaded_file is not None or sender_emails) and start_date <= end_date:
-        result = fetch_attachments_outlook(email_address, password, sender_emails, start_date, end_date)
+        result = fetch_attachments_outlook(email_address, st.session_state.password, sender_emails, start_date, end_date)
         if result:
             zip_buffer, total_attachments = result
             st.success(f"Total attachments retrieved: {total_attachments}")
