@@ -14,18 +14,18 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
    - **Password:** Enter the password for your Outlook email. This is necessary for the app to access your emails. Click on the eye icon to reveal the password if needed.
    - **Submit:** Press the 'Enter' key or click outside the box to proceed after entering the password.
 
-     ![1721382994308](image/WalkThrough/1721382994308.png)**Upload Sender Email Addresses:**
-2. - You have **two options** to specify the sender email addresses, choose any one:
-     1. **Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
+     ![1721382994308](image/WalkThrough/1721382994308.png)
+2. You have **two options** to specify the sender email addresses, choose any one:
 
-        ![1721382529926](image/WalkThrough/1721382529926.png)
+   1. **Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
 
-        ##### Format of .txt file:
 
-        ![1721382613724](image/WalkThrough/1721382613724.png)
-     2. **Enter Manually:** Alternatively, you can manually enter the sender email addresses in the provided text box. Each email address should be on a new line.
+      ##### Format of .txt file:
 
-        ![1721382510657](image/WalkThrough/1721382510657.png)
+      ![1721382613724](image/WalkThrough/1721382613724.png)
+   2. **Enter Manually:** Alternatively, you can manually enter the sender email addresses in the provided text box. Each email address should be on a new line.
+
+      ![1721382510657](image/WalkThrough/1721382510657.png)
 3. **Specify the Date Range:**
 
    - **Start Date:** Select the start date from which you want to search for attachments.

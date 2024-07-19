@@ -1,68 +1,70 @@
-# Outlook Email Attachment Fetcher
+# Fetch My Attachments
 
-## Description
-This Python script automates the process of fetching PDF and DOCX attachments from specified senders in your Outlook inbox. It categorizes the attachments into predefined folders based on their filenames and handles potential filename conflicts.
-
-## Features
-- Securely stores and retrieves Outlook credentials using the system's keychain.
-- Reads sender email addresses from a text file.
-- Fetches both PDF and DOCX attachments.
-- Categorizes attachments into folders: VitalsReports, DESRI DAILY, IRS1, and MISC.
-- Handles filename conflicts by appending a counter to duplicate filenames.
-- Provides detailed console output about the fetching process.
-
-## Requirements
-- Python 3.6+
-- exchangelib
-- keyring
+This Streamlit app allows users to fetch email attachments from their Outlook account based on specific criteria. The attachments will be organized into a zip file with categorized folders.
 
 ## Installation
-1. Clone this repository or download the script.
-2. Install the required packages:
-   ```sh
-   pip install exchangelib keyring
+
+To run this app locally, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/tejanshsachdeva/FetchMyAttachments.git
+   cd FetchMyAttachments
    ```
+2. Install the required packages:
 
-## Setup
-1. Create a file named `sender_emails.txt` in the same directory as the script.
-2. Add the email addresses of the senders you want to fetch attachments from, one per line.
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the Streamlit app:
 
-Example `sender_emails.txt`:
-```
-sender1@example.com
-sender2@example.com
-sender3@example.com
-```
+   ```bash
+   streamlit run script.py
+   ```
 
 ## Usage
-1. Run the script:
-   ```sh
-   python outlook_attachment_fetcher.py
-   ```
-2. On the first run, you'll be prompted to enter your Outlook email address and password. These will be securely stored for future use.
-3. Enter the number of days to look back for emails when prompted.
-4. The script will fetch attachments and save them in the `FetchedAttachments` folder, organized into subfolders.
 
-## Folder Structure
-```
-FetchedAttachments/
-├── VitalsReports/
-├── DESRI DAILY/
-├── IRS1/
-└── MISC/
-```
+1. **Enter Your Outlook Email Address and Password:**
 
-## Error Handling
-- If the `sender_emails.txt` file is not found or is empty, an error message will be displayed.
-- If no messages are found from a sender, it will be reported in the console output.
-- If no attachments are found from a sender, it will be explicitly stated in the output.
+   - **Email Address:** Input the Outlook email address where you receive the emails from which attachments are to be fetched.
+   - **Password:** Enter the password for your Outlook email. Click on the eye icon to reveal the password if needed. Press 'Enter' or click outside the box to proceed after entering the password.
+2. **Upload Sender Email Addresses:**
 
-## Security Note
-This script uses the `keyring` library to securely store your Outlook credentials in your system's keychain. Never share your credentials or include them directly in the script.
+   - **Option 1: Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
+   - **Option 2: Enter Manually:** Alternatively, you can manually enter the sender email addresses in the provided text box. Each email address should be on a new line.
+3. **Specify the Date Range:**
 
-## Troubleshooting
-- If you need to reset your stored credentials, you can use the `keyring` command-line tool or delete the stored credentials through your system's keychain manager.
-- Ensure you have the necessary permissions to access the specified Outlook account.
+   - **Start Date:** Select the start date from which you want to search for attachments.
+   - **End Date:** Select the end date up to which you want to search for attachments.
+4. **Fetch Attachments:**
+
+   - Click the 'Fetch Attachments' button to start the process. The app will access your Outlook account, search for emails from the specified senders within the provided date range, and fetch the attachments.
+5. **Download the Zip File:**
+
+   - Once the process is complete, the app will generate a zip file containing the fetched attachments organized into the following folders:
+     ```
+     FetchedAttachments/
+     ├── VitalsReports/
+     ├── DESRI DAILY/
+     ├── IRS1/
+     └── MISC/
+     ```
+
+## Features
+
+- **Email Authentication:** Securely connect to your Outlook email using your credentials.
+- **Sender Filtering:** Fetch attachments only from specified senders.
+- **Date Range Filtering:** Specify a date range to limit the search for attachments.
+- **Categorized Folders:** Automatically organize fetched attachments into predefined folders based on their filenames.
+- **Download as Zip:** Easily download all fetched attachments in a single zip file.
+
+## Troubleshooting and Support
+
+By following these instructions, you can seamlessly fetch and categorize attachments from your Outlook emails. Should you encounter any problems or need further assistance, please consult the error messages provided by the app for guidance. For additional support, feel free to create an issue on our GitHub repository: [Submit an Issue](https://github.com/tejanshsachdeva/FetchMyAttachments/issues).
+
+## Walkthrough
+
+For a detailed step-by-step guide on using the app, please refer to the [walkthrough.md](https://github.com/tejanshsachdeva/FetchMyAttachments/blob/main/WalkThrough.md) file in the repository.
 
 ---
-
