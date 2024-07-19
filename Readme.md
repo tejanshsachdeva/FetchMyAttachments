@@ -67,4 +67,8 @@ By following these instructions, you can seamlessly fetch and categorize attachm
 
 For a detailed step-by-step guide on using the app, please refer to the [walkthrough.md](https://github.com/tejanshsachdeva/FetchMyAttachments/blob/main/WalkThrough.md) file in the repository.
 
+## Contributing
+
+Feel free to contribute by cloning this repo. There is a [test folder](https://github.com/tejanshsachdeva/FetchMyAttachments/tree/main/test) in this repo which has `frontend.py` and `backend.py` code. This uses Flask as the backend to send requests to the Outlook API. Contribute to it, improve the security measures, and feel free to submit a pull request.
+
 ---
