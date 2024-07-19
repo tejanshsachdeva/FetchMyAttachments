@@ -15,21 +15,26 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
    - **Submit:** Press the 'Enter' key or click outside the box to proceed after entering the password.
 
      ![1721382994308](image/WalkThrough/1721382994308.png)**Upload Sender Email Addresses:**
+
 2. - You have **two options** to specify the sender email addresses, choose any one:
-     1. **Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
 
-        ![1721382529926](image/WalkThrough/1721382529926.png)
+   1. **Upload a Text File:** Click on the 'Browse files' button or drag and drop a text file (.txt) containing the sender email addresses. Each email address should be on a new line.
 
-        ##### Format of .txt file:
+      ![1721382529926](image/WalkThrough/1721382529926.png)
 
-        ![1721382613724](image/WalkThrough/1721382613724.png)
-     2. **Enter Manually:** Alternatively, you can manually enter the sender email addresses in the provided text box. Each email address should be on a new line.
+      ##### Format of .txt file:
 
-        ![1721382510657](image/WalkThrough/1721382510657.png)
+      ![1721382613724](image/WalkThrough/1721382613724.png)
+
+   2. **Enter Manually:** Alternatively, you can manually enter the sender email addresses in the provided text box. Each email address should be on a new line.
+
+      ![1721382510657](image/WalkThrough/1721382510657.png)
+
 3. **Specify the Date Range:**
 
    - **Start Date:** Select the start date from which you want to search for attachments.
    - **End Date:** Select the end date up to which you want to search for attachments.
+
 4. **Fetch Attachments:**
 
    - Click the **'Fetch Attachments'** button to start the process. The app will now access your Outlook account, search for emails from the specified senders within the provided date range, and fetch the attachments. This process might take a few seconds or even minutes.
@@ -38,11 +43,13 @@ You can access the app through this link: [https://fetchmyattachments.streamlit.
      After clicking on **"Fetch Attachments"**, you will see **"Connection Successfull"** which means that your **Outlook Account** is successfully connected.
 
      ![1721382763129](image/WalkThrough/1721382763129.png)
+
 5. **Download the Zip File:**
 
    - Once the process is complete, the app will generate a zip file containing the fetched attachments. The zip file will have the following structure:
 
      ![1721382915647](image/WalkThrough/1721382915647.png)
+
    - ```
      FetchedAttachments/
      ├── VitalsReports/
